@@ -1,0 +1,140 @@
+#:kivy 2.0.0
+#:import utils kivy.utils
+#:import datetime datetime.datetime
+#:import math math
+#:set timeft r'%H:%M:%S'
+#:set bg_color utils.get_color_from_hex('#E0E1DD')
+#:set clock_color utils.get_color_from_hex('#0800ff')
+#:set timebg_color utils.get_color_from_hex('#415A77') 
+#:set pointer_color utils.get_color_from_hex('#E0E1DD')
+#:set time_color utils.get_color_from_hex('#E0E1DD')
+#:set input_color utils.get_color_from_hex('#E0E1DD')
+#:set input_text_color utils.get_color_from_hex('#fa0505')
+#:set cancel_color utils.get_color_from_hex('#010205')
+#:set no_alarm_color utils.get_color_from_hex('#415A77')
+#:set alarm_ring_color utils.get_color_from_hex('#892B64')
+
+
+<GeneralLayout>:
+    id: general_layout
+    ClockTimeBgLayout:
+        id: clocktime_bg
+        canvas:
+            Color:
+                rgb: bg_color
+            Rectangle:
+                size: clocktime_bg.size
+                pos: clocktime_bg.pos
+        TimeLayout:
+            id: timelayout
+            size_hint: 1, 2/5
+            pos_hint: {'bottom':1}
+            TimeWid:
+                id: time_wid
+                size: timelayout.size
+                canvas:
+                    Color:
+                        rgb: timebg_color
+                    Rectangle:
+                        size: time_wid.size
+                        pos: time_wid.pos
+                Label:
+                    color: time_color
+                    size: self.size
+                    center_x: time_wid.center_x
+                    center_y: time_wid.center_y
+                    text: datetime.strftime(general_layout.time, timeft)
+                    font_size: sp(80)
+                    halign: 'center'
+                    valign: 'middle'
+        ClockLayout:
+            id: clocklayout
+            size_hint: 1, 3/5
+            pos_hint: {'top':1}
+            ClockWid:
+                id: clock_wid
+                size: self.size
+                pos: clocklayout.pos
+                canvas:
+                    Color:
+                        rgb: clock_color
+                    Ellipse:
+                        pos: self.center_x - min(self.size)/2, self.center_y - min(self.size)/2 
+                        size: (m := min(self.size)), m
+                    Color:
+                        rgb: input_text_color
+                    Line:  # seconds pointer
+                        points: [[self.center_x, self.center_y], [self.center_x + math.sin(self.s_degrees)*min(self.size)/2.2, self.center_y + math.cos(self.s_degrees)*min(self.size)/2.2]]
+                        width: 3
+                    Color:
+                        rgb: pointer_color
+                    Line:  # hours pointer
+                        points: [[self.center_x, self.center_y], [self.center_x + math.sin(self.h_degrees)*min(self.size)/4, self.center_y + math.cos(self.h_degrees)*min(self.size)/4]]
+                        width: 5
+                    Color:
+                        rgb: pointer_color
+                    Line:  # minutes pointer
+                        points: [[self.center_x, self.center_y], [self.center_x + math.sin(self.m_degrees)*min(self.size)/2.5, self.center_y + math.cos(self.m_degrees)*min(self.size)/2.5]]
+                        width: 5
+                        
+    AlarmsLayout:
+        id: alarms_layout
+        orientation: 'vertical'
+        canvas:
+            Color:
+                rgb: bg_color
+            Rectangle:
+                size: self.size
+                pos: self.pos
+
+    SetAlarmLayout:
+        id: set_alarm_layout
+        canvas:
+            Color:
+                rgb: clock_color
+            Rectangle:
+                size: self.size
+                pos: self.pos
+        InputLayout:
+            id: input_layout
+            pos_hint: {'center_x':0.5, 'center_y':0.5}
+            size_hint: 1/1.5, 1/3
+            AlarmInput:
+                multiline: False
+                foreground_color: input_text_color
+                cursor_blink: False
+                hint_text: 'SET ALARM'
+                pos_hint: {'center_x':0.5, 'center_y':0.5}
+                background_color: input_color
+                font_size: sp(set_alarm_layout.width/12)
+                focus: True
+                halign: 'center'
+                padding: [0, 50, 0, 0]
+
+<Alarm>:
+    pos_hint: {'center_x':0.5, 'center_y':0.5}
+    canvas:
+        Color: 
+            rgb: bg_color if not root.playing else input_text_color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    Label:
+        text: root.alarm_time
+        font_size: sp(60)
+        color: input_text_color if not root.playing else bg_color
+        center_x: root.center_x
+        center_y: root.center_y
+    Button:
+        x: root.x
+        y: root.y
+        text: 'CANCEL'
+        height: root.height
+        background_normal: ''
+        background_color: cancel_color
+        on_press: root.remove()
+
+<NoAlarmLabel>:
+    text: 'NO ALARMS'
+    color: no_alarm_color
+    font_size: sp(50)
